@@ -16,6 +16,8 @@
 #include <fcntl.h>
 #include <linux/uinput.h>
 
+#include <fstream>
+
 using namespace ::android::fingerprint::samsung;
 
 using ::android::base::ParseInt;
@@ -37,6 +39,12 @@ constexpr char FW_VERSION[] = "1.01";
 constexpr char SERIAL_NUMBER[] = "00000001";
 constexpr char SW_COMPONENT_ID[] = "matchingAlgorithm";
 constexpr char SW_VERSION[] = "vendor/version/revision";
+}
+
+template <typename T>
+static void set(const std::string& path, const T& value) {
+    std::ofstream file(path);
+    file << value << std::endl;
 }
 
 static Fingerprint* sInstance;
@@ -101,6 +109,11 @@ Fingerprint::Fingerprint() {
 
         LOG(INFO) << "Successfully registered uinput-sec-fp for fingerprint gestures";
     }
+
+    // VERY DIRTY HACK: FIX FINGERPRINT
+    // TODO set_fod_rect
+    set("/sys/devices/virtual/sec/tsp/cmd", "fod_enable,1,1,0");
+
 skip_uinput_setup:
     return;
 }
